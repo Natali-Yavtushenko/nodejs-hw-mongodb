@@ -1,9 +1,20 @@
 import mongoose from 'mongoose';
 
-const DB_URL =
-  'mongodb+srv://yavtushenkon:N1915757n@cluster0.fimle.mongodb.net/contacts?retryWrites=true&w=majority&appName=Cluster0';
+import { getEnvVar } from '../utils/getEnvVar.js';
 
 export const initMongoConnection = async () => {
-  return mongoose.connect(DB_URL);
+  try {
+    const user = getEnvVar('MONGODB_USER');
+    const pwd = getEnvVar('MONGODB_PASSWORD');
+    const url = getEnvVar('MONGODB_URL');
+    const db = getEnvVar('MONGODB_DB');
+
+    await mongoose.connect(
+      `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority`,
+    );
+    console.log('Mongo connection successfully established!');
+  } catch (e) {
+    console.log('Error while setting up mongo connection', e);
+    throw e;
+  }
 };
-console.log('Mongo connection successfully established!');
