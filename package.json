@@ -6,13 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "get-all": "node src/scripts/getAllContacts",
-    "generate": "node src/scripts/generateContacts.js",
-    "add-one": "node src/scripts/addOneContact.js",
-    "count": "node src/scripts/countContacts.js",
-    "remove-last": "node src/scripts/removeLastContact.js",
-    "remove-all": "node src/scripts/removeAllContacts.js"
+    "dev": "nodemon src/index.js"
   },
   "keywords": [],
   "author": "YOUR_NAME <yavtushenkon@gmail.com>",
@@ -28,6 +22,7 @@
     "dotenv": "^16.4.7",
     "eslint-scope": "^8.2.0",
     "express": "^4.21.2",
+    "http-errors": "^2.0.0",
     "mongodb": "^6.13.1",
     "mongoose": "^8.11.0",
     "pino-http": "^10.4.0"
