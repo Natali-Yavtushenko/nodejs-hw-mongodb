@@ -12,6 +12,18 @@ export const getAllContacts = async ({
   const skip = (page - 1) * perPage;
 
   const contactsQuery = ContactCollection.find();
+
+  if (filter.contactType) {
+    contactsQuery.where('contactType').equals(filter.contactType);
+  }
+
+  if (filter.maxphoneNumber) {
+    contactsQuery.where('phoneNumber').lte(filter.maxphoneNumber);
+  }
+
+  if (filter.minphoneNumber) {
+    contactsQuery.where('phoneNumber').gte(filter.minphoneNumber);
+  }
   const contactsCount = await ContactCollection.find()
     .merge(contactsQuery)
     .countDocuments();
