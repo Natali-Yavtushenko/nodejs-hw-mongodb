@@ -1,6 +1,8 @@
 import { HttpError } from 'http-errors';
 
 export const errorHandler = (err, req, res, next) => {
+  console.error('🚨 Error occurred:', err.message); // Виводимо повідомлення помилки
+  console.error('🔍 Stack trace:', err.stack); // Виводимо стек помилки
   if (err instanceof HttpError) {
     res.status(err.status).json({
       status: err.status,
