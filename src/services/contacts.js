@@ -37,7 +37,11 @@ export const getAllContacts = async ({
       totalPages: Math.ceil(contactsCount / perPage),
     };
   }
-  const contacts = await contactsQuery.skip(skip).limit(limit).exec();
+  const contacts = await contactsQuery
+    .skip(skip)
+    .limit(limit)
+    .sort({ [sortBy]: sortOrder })
+    .exec();
 
   const paginationData = calculatePaginationData(contactsCount, perPage, page);
 
