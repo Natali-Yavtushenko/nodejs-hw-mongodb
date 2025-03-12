@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 export const createContactsSchema = Joi.object({
   name: Joi.string().min(3).max(18).required(),
-  phoneNumber: Joi.number().min(7).max(16).required(),
+  phoneNumber: Joi.string().min(7).max(16).required(),
   email: Joi.string(),
   contactType: Joi.string().valid('work', 'home', 'personal').required(),
 });

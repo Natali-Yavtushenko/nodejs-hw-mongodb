@@ -24,7 +24,7 @@ export const getAllContacts = async ({
   if (filter.minphoneNumber) {
     contactsQuery.where('phoneNumber').gte(filter.minphoneNumber);
   }
-  const [contactsCount, contacts] = awaitPromise.all([
+  const [contactsCount, contacts] = await Promise.all([
     ContactCollection.find().merge(contactsQuery).countDocuments(),
     contactsQuery
       .skip(skip)
