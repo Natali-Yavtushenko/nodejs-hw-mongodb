@@ -1,18 +1,18 @@
 import { Router } from 'express';
 import {
-  createContactCntroller,
+  createContactController,
   getContactsController,
   getContactByIdController,
   deleteContactController,
   patchContactController,
 } from '../controllers/contacts.js';
-import { ctrlWrapper } from '../utils/ctrWrapper.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { validateBody } from '../middlewares/validateBody.js';
 import {
   createContactsSchema,
   updateContactsSchema,
 } from '../validation/contacts.js';
-import { isValidId } from '../middlewares/isvalidId.js';
+import { isValidId } from '../middlewares/isValidId.js';
 
 const router = Router();
 
@@ -25,7 +25,7 @@ router.get(
 router.post(
   '/contacts',
   validateBody(createContactsSchema),
-  ctrlWrapper(createContactCntroller),
+  ctrlWrapper(createContactController),
 );
 router.patch(
   '/contacts/:contactid',
