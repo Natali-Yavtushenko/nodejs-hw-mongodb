@@ -30,7 +30,7 @@ const parseSortBy = (sortBy) => {
 };
 
 export const parseSortParams = (query) => {
-  console.log('🔍 Вхідні параметри:', query); // Додано для дебагу
+  console.log('🔍 Вхідні параметри:', query);
   const { sortOrder, sortBy } = query;
 
   const parsedSortOrder = parseSortOrder(sortOrder);
