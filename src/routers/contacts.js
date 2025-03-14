@@ -14,19 +14,29 @@ import {
 } from '../validation/contacts.js';
 import { isValidId } from '../middlewares/isValidId.js';
 
-router.get('/', ctrlWrapper(getContactsController));
-router.get('/:contactid', isValidId, ctrlWrapper(getContactByIdController));
-router.post(
+const contactRouter = Router();
+
+contactRouter.get('/', ctrlWrapper(getContactsController));
+contactRouter.get(
+  '/:contactid',
+  isValidId,
+  ctrlWrapper(getContactByIdController),
+);
+contactRouter.post(
   '/',
   validateBody(createContactsSchema),
   ctrlWrapper(createContactController),
 );
-router.patch(
+contactRouter.patch(
   '/:contactid',
   isValidId,
   validateBody(updateContactsSchema),
   ctrlWrapper(patchContactController),
 );
-router.delete('/:contactid', isValidId, ctrlWrapper(deleteContactController));
+contactRouter.delete(
+  '/:contactid',
+  isValidId,
+  ctrlWrapper(deleteContactController),
+);
 
 export default contactRouter;
