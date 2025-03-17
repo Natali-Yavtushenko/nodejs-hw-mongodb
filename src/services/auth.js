@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import createHttpError from 'http-errors';
 
 import UsersCollection from '../models/user.js';
@@ -58,13 +59,13 @@ const createSession = () => {
 };
 
 export const refreshUserSession = async ({ sessionId, refreshToken }) => {
-  const session = await SessionsCollection.fsndOne({
+  const session = await SessionsCollection.findOne({
     _id: sessionId,
     refreshToken,
   });
 
   if (!session) {
-    throw createHttpError(401, 'Session not foud');
+    throw createHttpError(401, 'Session not found');
   }
 
   const isSessionTokenExpired =

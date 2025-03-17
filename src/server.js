@@ -15,6 +15,7 @@ export const setupServer = () => {
 
   app.use(express.json());
   app.use(cors());
+  app.use(cookieParser()); // ✅ Додаємо middleware для читання cookies
 
   app.use(
     pino({
@@ -27,7 +28,6 @@ export const setupServer = () => {
   app.use(router);
 
   app.use('*', notFoundHandler);
-
   app.use(errorHandler);
 
   app.listen(PORT, () => {
@@ -40,4 +40,8 @@ export const startServer = () => {
   app.use(express.json());
   app.use(cors());
   app.use(cookieParser());
+
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 };
