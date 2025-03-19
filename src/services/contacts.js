@@ -8,10 +8,11 @@ export const getAllContacts = async ({
   sortOrder = SORT_ORDER.ASC,
   sortBy = '_id',
   filter = {},
+  userId,
 }) => {
   const limit = perPage;
   const skip = (page - 1) * perPage;
-  const contactsQuery = ContactCollection.find();
+  const contactsQuery = ContactCollection.find({ userId });
 
   if (filter.contactType) {
     contactsQuery.where('contactType').equals(filter.contactType);
@@ -24,8 +25,9 @@ export const getAllContacts = async ({
   if (filter.minphoneNumber) {
     contactsQuery.where('phoneNumber').gte(filter.minphoneNumber);
   }
+
   const [contactsCount, contacts] = await Promise.all([
-    ContactCollection.find().merge(contactsQuery).countDocuments(),
+    ContactCollection.find({ userId }).merge(contactsQuery).countDocuments(),
     contactsQuery
       .skip(skip)
       .limit(limit)
@@ -41,18 +43,22 @@ export const getAllContacts = async ({
   };
 };
 
-export function getContactById(contactid) {
-  return ContactCollection.findById(contactid);
+export function getContactById(contactid, userId) {
+  return ContactCollection.findOne({ _id: contactid, userId });
 }
 
 export const createContact = async (payload) => {
-  const contact = await ContactCollection.create(payload);
-  return contact;
+  return await ContactCollection.create(payload);
 };
 
-export const updateContact = async (contactid, payload, options = {}) => {
+export const updateContact = async (
+  contactid,
+  payload,
+  userId,
+  options = {},
+) => {
   const rawResult = await ContactCollection.findOneAndUpdate(
-    { _id: contactid },
+    { _id: contactid, userId },
     payload,
     {
       new: true,
@@ -61,18 +67,14 @@ export const updateContact = async (contactid, payload, options = {}) => {
     },
   );
 
-  if (!rawResult || !rawResult.value) return null;
+  if (!rawResult) return null;
 
   return {
-    contact: rawResult.value,
+    contact: rawResult,
     isNew: Boolean(rawResult?.lastErrorObject?.upserted),
   };
 };
 
-export const deleteContact = async (contactid) => {
-  const contact = await ContactCollection.findByIdAndDelete({
-    _id: contactid,
-  });
-
-  return contact;
+export const deleteContact = async (contactid, userId) => {
+  return await ContactCollection.findOneAndDelete({ _id: contactid, userId });
 };
