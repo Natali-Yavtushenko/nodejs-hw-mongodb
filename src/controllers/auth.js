@@ -1,4 +1,5 @@
 import { THIRTY_DAYS } from '../constants/index.js';
+
 import {
   loginUser,
   logoutUser,
@@ -29,7 +30,7 @@ export const loginUserController = async (req, res) => {
   });
   res.json({
     status: 200,
-    message: 'Successfully logged in an user!',
+    message: 'Successfully logged in a user!',
     data: {
       accessToken: session.accessToken,
     },
@@ -37,8 +38,24 @@ export const loginUserController = async (req, res) => {
 };
 
 export const logoutUserController = async (req, res) => {
-  if (req.cookies.sessionId) {
-    await logoutUser(req.cookies.sessionId);
+  const authHeader = req.get('Authorization');
+
+  if (!authHeader) {
+    return res.status(401).json({ message: 'Authorization header missing' });
+  }
+
+  const [bearer, token] = authHeader.split(' ');
+
+  if (bearer !== 'Bearer' || !token) {
+    return res.status(401).json({ message: 'Invalid token format' });
+  }
+
+  // Видалено tokenBlacklist
+
+  if (req.session) {
+    await SessionsCollection.findByIdAndUpdate(req.session._id, {
+      isActive: false,
+    });
   }
 
   res.clearCookie('sessionId');

@@ -23,7 +23,7 @@ const contactSchema = new mongoose.Schema(
       required: true,
       default: 'personal',
     },
-    userid: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
