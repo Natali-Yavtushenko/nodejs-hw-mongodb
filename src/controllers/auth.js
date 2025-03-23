@@ -1,4 +1,5 @@
 import { THIRTY_DAYS } from '../constants/index.js';
+import { SessionsCollection } from '../models/session.js';
 
 import {
   loginUser,
@@ -38,25 +39,16 @@ export const loginUserController = async (req, res) => {
 };
 
 export const logoutUserController = async (req, res) => {
-  const authHeader = req.get('Authorization');
+  const { sessionId, refreshToken } = req.cookies;
 
-  if (!authHeader) {
-    return res.status(401).json({ message: 'Authorization header missing' });
+  if (!sessionId || !refreshToken) {
+    console.log('Missing session or refresh token');
+    return res
+      .status(401)
+      .json({ message: 'Session ID or Refresh Token missing' });
   }
 
-  const [bearer, token] = authHeader.split(' ');
-
-  if (bearer !== 'Bearer' || !token) {
-    return res.status(401).json({ message: 'Invalid token format' });
-  }
-
-  // Видалено tokenBlacklist
-
-  if (req.session) {
-    await SessionsCollection.findByIdAndUpdate(req.session._id, {
-      isActive: false,
-    });
-  }
+  await SessionsCollection.findByIdAndUpdate(sessionId, { isActive: false });
 
   res.clearCookie('sessionId');
   res.clearCookie('refreshToken');
