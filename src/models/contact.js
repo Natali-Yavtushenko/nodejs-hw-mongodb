@@ -36,6 +36,14 @@ const contactSchema = new mongoose.Schema(
   },
 );
 
+contactSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    delete ret.updatedAt;
+    delete ret.__v;
+    return ret;
+  },
+});
+
 const ContactCollection = mongoose.model('Contact', contactSchema);
 
 export default ContactCollection;
