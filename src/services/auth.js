@@ -14,7 +14,8 @@ import {
 import UserCollection from '../models/user.js';
 import { getEnvVar } from '../utils/getEnvVar.js';
 import { sendEmail } from '../utils/sendMail.js';
-import { fstat } from 'fs';
+import fs from 'fs';
+import { patchContactController } from '../controllers/contacts.js';
 
 export const registerUser = async (payload) => {
   const user = await UsersCollection.findOne({ email: payload.email });
