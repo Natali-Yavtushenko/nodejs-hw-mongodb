@@ -1,4 +1,4 @@
-import patch from 'node:path';
+import path from 'node:path';
 
 export const SORT_ORDER = {
   ASC: 'asc',
@@ -17,4 +17,4 @@ export const SMTP = {
   SMTP_FROM: 'SMTP_FROM',
 };
 
-export const TEMPLATES_DIR = patch.join(process.cwd(), 'src', 'templates');
+export const TEMPLATES_DIR = path.join(process.cwd(), 'src', 'templates');
