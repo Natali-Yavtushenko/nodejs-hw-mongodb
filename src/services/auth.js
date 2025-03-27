@@ -3,8 +3,9 @@ import { randomBytes } from 'crypto';
 import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 
-import UsersCollection from '../models/user.js';
-import { SessionsCollection } from '../models/session.js';
+import UsersCollection from '../db/models/user.js';
+import { SessionsCollection } from '../db/models/session.js';
+
 import { getEnvVar } from '../utils/getEnvVar.js';
 import {
   FIFTEEN_MINUTES,
@@ -14,6 +15,7 @@ import {
 import handlebars from 'handlebars';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+
 
 export const registerUser = async (payload) => {
   const user = await UsersCollection.findOne({ email: payload.email });

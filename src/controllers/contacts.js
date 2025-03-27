@@ -4,7 +4,7 @@ import {
   createContact,
   deleteContact,
   getContactById,
-  getAllContacts,
+  getContacts,
   updateContact,
 } from '../services/contacts.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
@@ -17,7 +17,7 @@ export const getContactsController = async (req, res) => {
   const filter = parseFilterParams(req.query);
   const { _id: userId } = req.user;
 
-  const contacts = await getAllContacts({
+  const contacts = await getContacts({
     page,
     perPage,
     sortBy,
