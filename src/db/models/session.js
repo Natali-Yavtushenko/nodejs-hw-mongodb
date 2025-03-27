@@ -7,9 +7,11 @@ const sessionsSchema = new Schema(
     refreshToken: { type: String, required: true },
     accessTokenValidUntil: { type: Date, required: true },
     refreshTokenValidUntil: { type: Date, required: true },
-    isActive: { type: Boolean, default: true },
   },
-  { timestamps: true, versionKey: false },
+  {
+    timestamps: true,
+    versionKey: false,
+  },
 );
 
-export const SessionsCollection = model('sessions', sessionsSchema);
+export const SessionsCollection = model('session', sessionsSchema);

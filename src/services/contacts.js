@@ -1,8 +1,10 @@
+import createHttpError from 'http-errors';
+
 import { SORT_ORDER } from '../constants/index.js';
-import ContactCollection from '../models/contact.js';
+import { ContactsCollection } from '../db/models/contact.js';
 import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 
-export const getAllContacts = async ({
+export const getContacts = async ({
   page = 1,
   perPage = 10,
   sortOrder = SORT_ORDER.ASC,
@@ -12,30 +14,34 @@ export const getAllContacts = async ({
 }) => {
   const limit = perPage;
   const skip = (page - 1) * perPage;
-  const contactsQuery = ContactCollection.find({ userId });
+
+  const contactQuery = ContactsCollection.find({ userId });
+
+  if (filter.isFavourite) {
+    contactQuery.where('isFavourite').equals(filter.isFavourite);
+  }
 
   if (filter.contactType) {
-    contactsQuery.where('contactType').equals(filter.contactType);
+    contactQuery.where('contactType').equals(filter.contactType);
   }
 
-  if (filter.maxphoneNumber) {
-    contactsQuery.where('phoneNumber').lte(filter.maxphoneNumber);
+  const contactCount = await ContactsCollection.find({ userId })
+    .merge(contactQuery)
+    .countDocuments();
+
+  const totalPages = Math.ceil(contactCount / perPage);
+
+  if (page > totalPages && totalPages > 0) {
+    throw createHttpError(400, 'Invalid page number');
   }
 
-  if (filter.minphoneNumber) {
-    contactsQuery.where('phoneNumber').gte(filter.minphoneNumber);
-  }
+  const contacts = await contactQuery
+    .skip(skip)
+    .limit(limit)
+    .sort({ [sortBy]: sortOrder })
+    .exec();
 
-  const [contactsCount, contacts] = await Promise.all([
-    ContactCollection.find({ userId }).merge(contactsQuery).countDocuments(),
-    contactsQuery
-      .skip(skip)
-      .limit(limit)
-      .sort({ [sortBy]: sortOrder })
-      .exec(),
-  ]);
-
-  const paginationData = calculatePaginationData(contactsCount, perPage, page);
+  const paginationData = calculatePaginationData(contactCount, perPage, page);
 
   return {
     data: contacts,
@@ -43,38 +49,27 @@ export const getAllContacts = async ({
   };
 };
 
-export function getContactById(contactid, userId) {
-  return ContactCollection.findOne({ _id: contactid, userId });
-}
-
-export const createContact = async (payload) => {
-  return await ContactCollection.create(payload);
+export const getContactById = (contactId, userId) => {
+  return ContactsCollection.findOne({ _id: contactId, userId });
 };
 
-export const updateContact = async (
-  contactid,
-  payload,
-  userId,
-  options = {},
-) => {
-  const rawResult = await ContactCollection.findOneAndUpdate(
-    { _id: contactid, userId },
+export const createContact = (payload) => {
+  return ContactsCollection.create(payload);
+};
+
+export const updateContact = async (contactId, payload, userId) => {
+  const updatedContact = await ContactsCollection.findOneAndUpdate(
+    { _id: contactId, userId },
     payload,
-    {
-      new: true,
-      includeResultMetadata: true,
-      ...options,
-    },
+    { new: true, includeResultMetadata: true },
   );
 
-  if (!rawResult) return null;
-
-  return {
-    contact: rawResult,
-    isNew: Boolean(rawResult?.lastErrorObject?.upserted),
-  };
+  return updatedContact;
 };
 
-export const deleteContact = async (contactid, userId) => {
-  return await ContactCollection.findOneAndDelete({ _id: contactid, userId });
+export const deleteContact = (contactId, userId) => {
+  return ContactsCollection.findOneAndDelete({
+    _id: contactId,
+    userId,
+  });
 };

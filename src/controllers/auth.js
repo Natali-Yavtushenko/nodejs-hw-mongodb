@@ -1,5 +1,5 @@
 import { THIRTY_DAYS } from '../constants/index.js';
-import { SessionsCollection } from '../models/session.js';
+import { SessionsCollection } from '../db/models/session.js';
 
 import {
   loginUser,
