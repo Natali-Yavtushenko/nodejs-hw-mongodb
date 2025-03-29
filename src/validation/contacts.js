@@ -11,7 +11,7 @@ export const createContactSchema = Joi.object({
     if (value && !isValidObjectId(value)) {
       return helper.message('Contact id should be a valid mongo id');
     }
-    return true;
+    return value;
   }),
 });
 
@@ -25,6 +25,6 @@ export const updateContactSchema = Joi.object({
     if (value && !isValidObjectId(value)) {
       return helper.message('Contact id should be a valid mongo id');
     }
-    return true;
+    return value;
   }),
 });
