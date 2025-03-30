@@ -3,7 +3,6 @@ import { SessionsCollection } from '../db/models/session.js';
 
 import {
   loginUser,
-  logoutUser,
   refreshUserSession,
   registerUser,
   requestResetToken,
