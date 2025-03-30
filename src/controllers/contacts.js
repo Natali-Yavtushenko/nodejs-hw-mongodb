@@ -4,7 +4,7 @@ import {
   createContact,
   deleteContact,
   getContactById,
-  getContacts,
+  getAllContacts,
   updateContact,
 } from '../services/contacts.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
@@ -17,7 +17,7 @@ export const getContactsController = async (req, res) => {
   const filter = parseFilterParams(req.query);
   const { _id: userId } = req.user;
 
-  const contacts = await getContacts({
+  const contacts = await getAllContacts({
     page,
     perPage,
     sortBy,
@@ -65,15 +65,13 @@ export const patchContactController = async (req, res) => {
   const { _id: userId } = req.user;
 
   const updatedContact = await updateContact(contactId, req.body, userId);
-  console.log('Updated contact:', updatedContact);
-  console.log('Type of updatedContact:', typeof updatedContact);
 
   if (!updatedContact) throw createHttpError(404, 'Contact not found');
 
   res.json({
     status: 200,
     message: 'Successfully patched a contact!',
-    data: updatedContact,
+    data: updatedContact.value,
   });
 };
 
