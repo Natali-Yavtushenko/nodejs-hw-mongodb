@@ -115,20 +115,61 @@ export const requestResetToken = async (email) => {
     'send-password-email.html',
   );
 
-  const templateSource = (
-    await fs.readFile(resetPasswordTemplatePath)
-  ).toString();
+  try {
+    const templateSource = (
+      await fs.readFile(resetPasswordTemplatePath)
+    ).toString();
 
-  const template = handlebars.compile(templateSource);
-  const html = template({
-    name: user.name,
-    link: `${getEnvVar('APP_DOMAIN')}/reset-pwd?token=${resetToken}`,
+    const template = handlebars.compile(templateSource);
+    const html = template({
+      name: user.name,
+      link: `${getEnvVar('APP_DOMAIN')}/reset-pwd?token=${resetToken}`,
+    });
+
+    await sendEmail({
+      from: getEnvVar(SMTP.SMTP_FROM),
+      to: email,
+      subject: 'Reset your password',
+      html,
+    });
+  } catch (error) {
+    throw createHttpError(
+      500,
+      'Failed to send the email, please try again later.',
+    );
+  }
+};
+
+export const resetPassword = async (payload) => {
+  if (!payload.password || payload.password.length < 6) {
+    throw createHttpError(400, 'Password must be at least 6 characters long.');
+  }
+
+  let decodedToken;
+
+  try {
+    decodedToken = jwt.verify(payload.token, getEnvVar('JWT_SECRET'));
+  } catch (error) {
+    throw createHttpError(401, 'Token is expired or invalid.');
+  }
+
+  const user = await UsersCollection.findOne({
+    email: decodedToken.email,
+    _id: decodedToken.sub,
   });
 
-  await sendEmail({
-    from: getEnvVar(SMTP.SMTP_FROM),
-    to: email,
-    subject: 'Reset your password',
-    html,
-  });
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+
+  const hashedPassword = await bcrypt.hash(payload.password, 10);
+
+  await UsersCollection.updateOne(
+    { _id: user._id },
+    { $set: { password: hashedPassword } },
+  );
+
+  await SessionsCollection.deleteMany({ userId: user._id });
+
+  return { message: 'Password successfully reset' };
 };
