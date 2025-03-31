@@ -27,12 +27,14 @@ contactRouter.get(
 );
 contactRouter.post(
   '/',
+  upload.single('photo'),
   validateBody(createContactsSchema),
   ctrlWrapper(createContactController),
 );
 contactRouter.patch(
   '/:contactid',
   isValidId,
+  upload.single('photo'),
   validateBody(updateContactsSchema),
   ctrlWrapper(patchContactController),
 );
