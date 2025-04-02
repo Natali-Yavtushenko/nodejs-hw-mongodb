@@ -7,12 +7,8 @@ const parseSortOrder = (sortOrder) => {
 };
 
 const parseSortBy = (sortBy) => {
-  if (!sortBy) {
-    console.warn("⚠️ Отримано некоректний sortBy, використовую '_id'");
-    return '_id';
-  }
   const keysOfContact = [
-    'id',
+    '_id',
     'name',
     'phoneNumber',
     'email',
@@ -25,21 +21,15 @@ const parseSortBy = (sortBy) => {
     return sortBy;
   }
 
-  console.warn(`⚠️ Невідомий sortBy: ${sortBy}, використовую '_id'`);
   return '_id';
 };
 
 export const parseSortParams = (query) => {
-  console.log('🔍 Вхідні параметри:', query);
   const { sortOrder, sortBy } = query;
 
   const parsedSortOrder = parseSortOrder(sortOrder);
   const parsedSortBy = parseSortBy(sortBy);
-  console.log('✅ Оброблені параметри сортування:', {
-    sortBy,
-    parsedSortBy,
-    parsedSortOrder,
-  });
+
   return {
     sortOrder: parsedSortOrder,
     sortBy: parsedSortBy,
