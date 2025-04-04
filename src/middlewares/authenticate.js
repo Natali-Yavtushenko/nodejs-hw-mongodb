@@ -1,47 +1,46 @@
 import createHttpError from 'http-errors';
-import { SessionsCollection } from '../models/session.js';
-import UsersCollection from '../models/user.js';
+
+import { SessionsCollection } from '../db/models/session.js';
+import UsersCollection from '../db/models/user.js';
 
 export const authenticate = async (req, res, next) => {
   const authHeader = req.get('Authorization');
-  const { sessionId } = req.cookies;
 
-  if (!authHeader && !sessionId) {
-    return next(
-      createHttpError(401, 'Authorization header or sessionId missing'),
-    );
+  if (!authHeader) {
+    next(createHttpError(401, 'Please provide Authorization header'));
+    return;
   }
 
-  let session;
+  const bearer = authHeader.split(' ')[0];
+  const token = authHeader.split(' ')[1];
 
-  if (authHeader) {
-    const [bearer, token] = authHeader.split(' ');
-
-    if (bearer !== 'Bearer' || !token) {
-      return next(createHttpError(401, 'Invalid token format'));
-    }
-
-    session = await SessionsCollection.findOne({ accessToken: token });
-  } else if (sessionId) {
-    session = await SessionsCollection.findById(sessionId);
+  if (bearer !== 'Bearer' || !token) {
+    next(createHttpError(401, 'Auth header should be of type Bearer'));
+    return;
   }
 
-  if (!session || !session.isActive) {
-    return next(createHttpError(401, 'Session not found or inactive'));
+  const session = await SessionsCollection.findOne({ accessToken: token });
+
+  if (!session) {
+    next(createHttpError(401, 'Session not found'));
+    return;
   }
 
-  if (new Date() > new Date(session.accessTokenValidUntil)) {
-    return next(createHttpError(401, 'Access token expired'));
+  const isAccessTokenExpired =
+    new Date() > new Date(session.accessTokenValidUntil);
+
+  if (isAccessTokenExpired) {
+    next(createHttpError(401, 'Access token expired'));
   }
 
   const user = await UsersCollection.findById(session.userId);
 
   if (!user) {
-    return next(createHttpError(401, 'User not found'));
+    next(createHttpError(401));
+    return;
   }
 
   req.user = user;
-  req.session = session;
 
   next();
 };

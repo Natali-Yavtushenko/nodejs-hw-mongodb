@@ -1,19 +1,13 @@
-import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
+import bcrypt from 'bcrypt';
 import createHttpError from 'http-errors';
-import jwt from 'jsonwebtoken';
-
-import UsersCollection from '../models/user.js';
-import { SessionsCollection } from '../models/session.js';
-import { getEnvVar } from '../utils/getEnvVar.js';
-import {
-  FIFTEEN_MINUTES,
-  TEMPLATES_DIR,
-  THIRTY_DAYS,
-} from '../constants/index.js';
 import handlebars from 'handlebars';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import UsersCollection from '../db/models/user.js';
+
+import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
+import { SessionsCollection } from '../db/models/session.js';
 
 export const registerUser = async (payload) => {
   const user = await UsersCollection.findOne({ email: payload.email });
@@ -37,6 +31,7 @@ export const loginUser = async (payload) => {
   if (!isEqual) {
     throw createHttpError(401, 'Unauthorized');
   }
+
   await SessionsCollection.deleteOne({ userId: user._id });
 
   const accessToken = randomBytes(30).toString('base64');
@@ -63,11 +58,11 @@ const createSession = () => {
     accessToken,
     refreshToken,
     accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
+    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
   };
 };
 
-export const refreshUserSession = async ({ sessionId, refreshToken }) => {
+export const refreshUsersSession = async ({ sessionId, refreshToken }) => {
   const session = await SessionsCollection.findOne({
     _id: sessionId,
     refreshToken,
@@ -141,35 +136,28 @@ export const requestResetToken = async (email) => {
 };
 
 export const resetPassword = async (payload) => {
-  if (!payload.password || payload.password.length < 6) {
-    throw createHttpError(400, 'Password must be at least 6 characters long.');
-  }
-
-  let decodedToken;
+  let entries;
 
   try {
-    decodedToken = jwt.verify(payload.token, getEnvVar('JWT_SECRET'));
-  } catch (error) {
-    throw createHttpError(401, 'Token is expired or invalid.');
+    entries = jwt.verify(payload.token, getEnvVar('JWT_SECRET'));
+  } catch (err) {
+    if (err instanceof Error) throw createHttpError(401, err.message);
+    throw err;
   }
 
   const user = await UsersCollection.findOne({
-    email: decodedToken.email,
-    _id: decodedToken.sub,
+    email: entries.email,
+    _id: entries.sub,
   });
 
   if (!user) {
     throw createHttpError(404, 'User not found');
   }
 
-  const hashedPassword = await bcrypt.hash(payload.password, 10);
+  const encryptedPassword = await bcrypt.hash(payload.password, 10);
 
   await UsersCollection.updateOne(
     { _id: user._id },
-    { $set: { password: hashedPassword } },
+    { password: encryptedPassword },
   );
-
-  await SessionsCollection.deleteMany({ userId: user._id });
-
-  return { message: 'Password successfully reset' };
 };

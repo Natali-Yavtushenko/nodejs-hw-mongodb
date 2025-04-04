@@ -1,8 +1,6 @@
-import Joi from 'joi';
+import { model, Schema } from 'mongoose';
 
-import mongoose from 'mongoose';
-
-const contactSchema = new mongoose.Schema(
+const contactsSchema = new Schema(
   {
     name: {
       type: String,
@@ -12,30 +10,32 @@ const contactSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    email: String,
+    email: {
+      type: String,
+    },
     isFavourite: {
       type: Boolean,
       default: false,
     },
     contactType: {
       type: String,
-      enum: ['work', 'home', 'personal'],
       required: true,
+      enum: ['work', 'home', 'personal'],
       default: 'personal',
     },
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type: Schema.Types.ObjectId,
+      ref: 'users',
       required: true,
     },
-  },
 
+    photo: { type: String },
+  },
   {
     timestamps: true,
     versionKey: false,
   },
 );
 
-const ContactCollection = mongoose.model('Contact', contactSchema);
-
-export default ContactCollection;
+const ContactsCollection = model('contact', contactsSchema);
+export default ContactsCollection;
