@@ -1,11 +1,12 @@
 import { HttpError } from 'http-errors';
 
 export const errorHandler = (err, req, res, next) => {
+  console.error('💥 ERROR:', err); // <== Обов'язково
   if (err instanceof HttpError) {
     res.status(err.status).json({
       status: err.status,
       message: err.name,
-      data: err,
+      data: err.stack,
     });
     return;
   }

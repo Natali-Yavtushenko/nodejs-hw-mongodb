@@ -6,7 +6,11 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import UsersCollection from '../db/models/user.js';
 
-import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
+import {
+  FIFTEEN_MINUTES,
+  TEMPLATES_DIR,
+  THIRTY_DAYS,
+} from '../constants/index.js';
 import { SessionsCollection } from '../db/models/session.js';
 
 export const registerUser = async (payload) => {
@@ -105,35 +109,42 @@ export const requestResetToken = async (email) => {
     },
   );
 
-  const resetPasswordTemplatePath = path.join(
-    TEMPLATES_DIR,
-    'send-password-email.html',
-  );
-
-  try {
-    const templateSource = (
-      await fs.readFile(resetPasswordTemplatePath)
-    ).toString();
-
-    const template = handlebars.compile(templateSource);
-    const html = template({
-      name: user.name,
-      link: `${getEnvVar('APP_DOMAIN')}/reset-pwd?token=${resetToken}`,
-    });
-
-    await sendEmail({
-      from: getEnvVar(SMTP.SMTP_FROM),
-      to: email,
-      subject: 'Reset your password',
-      html,
-    });
-  } catch (error) {
-    throw createHttpError(
-      500,
-      'Failed to send the email, please try again later.',
-    );
-  }
+  await sendEmail({
+    from: getEnvVar(SMTP.SMTP_FROM),
+    to: email,
+    subject: 'Reset your password',
+    html: `<p>Click <a href="${resetToken}">here</a> to reset your password!</p>`,
+  });
 };
+
+const resetPasswordTemplatePath = path.join(
+  TEMPLATES_DIR,
+  'send-password-email.html',
+);
+
+try {
+  const templateSource = (
+    await fs.readFile(resetPasswordTemplatePath)
+  ).toString();
+
+  const template = handlebars.compile(templateSource);
+  const html = template({
+    name: user.name,
+    link: `${getEnvVar('APP_DOMAIN')}/reset-pwd?token=${resetToken}`,
+  });
+
+  await sendEmail({
+    from: getEnvVar(SMTP.SMTP_FROM),
+    to: email,
+    subject: 'Reset your password',
+    html,
+  });
+} catch (error) {
+  throw createHttpError(
+    500,
+    'Failed to send the email, please try again later.',
+  );
+}
 
 export const resetPassword = async (payload) => {
   let entries;
