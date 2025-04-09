@@ -14,6 +14,7 @@ import UsersCollection from '../db/models/user.js';
 
 import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
 import { SessionsCollection } from '../db/models/session.js';
+import { loginUser } from '../services/auth.js';
 
 export const registerUserController = async (payload) => {
   const user = await UsersCollection.findOne({ email: payload.email });
@@ -27,28 +28,24 @@ export const registerUserController = async (payload) => {
   });
 };
 
-export const loginUserController = async (payload) => {
-  const user = await UsersCollection.findOne({ email: payload.email });
-  if (!user) {
-    throw createHttpError(404, 'User not found');
-  }
+export const loginUserController = async (req, res) => {
+  const session = await loginUser(req.body);
 
-  const isEqual = await bcrypt.compare(payload.password, user.password);
-  if (!isEqual) {
-    throw createHttpError(401, 'Unauthorized');
-  }
+  res.cookie('refreshToken', session.refreshToken, {
+    httpOnly: true,
+    expires: new Date(Date.now() + THIRTY_DAYS),
+  });
+  res.cookie('sessionId', session._id, {
+    httpOnly: true,
+    expires: new Date(Date.now() + THIRTY_DAYS),
+  });
 
-  await SessionsCollection.deleteOne({ userId: user._id });
-
-  const accessToken = randomBytes(30).toString('base64');
-  const refreshToken = randomBytes(30).toString('base64');
-
-  return await SessionsCollection.create({
-    userId: user._id,
-    accessToken,
-    refreshToken,
-    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
+  res.json({
+    status: 200,
+    message: 'Successfully logged in an user!',
+    data: {
+      accessToken: session.accessToken,
+    },
   });
 };
 
