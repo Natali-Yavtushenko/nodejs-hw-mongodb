@@ -1,3 +1,9 @@
+
+import {
+  registerUser,
+  requestResetToken,
+  resetPassword,
+} from '../services/auth.js';
 import { registerUser } from '../services/auth.js';
 import { loginUser } from '../services/auth.js';
 import { logoutUser } from '../services/auth.js';
@@ -55,6 +61,10 @@ const setupSession = (res, session) => {
     httpOnly: true,
     expires: new Date(Date.now() + ONE_DAY),
   });
+  res.cookie('sessionId', session._id, {
+    httpOnly: true,
+    expires: new Date(Date.now() + THIRTY_DAYS),
+  });
 };
 
 export const refreshUserSessionController = async (req, res) => {
@@ -71,5 +81,30 @@ export const refreshUserSessionController = async (req, res) => {
     data: {
       accessToken: session.accessToken,
     },
+  });
+};
+
+
+export const requestResetEmailController = async (req, res, next) => {
+  try {
+    console.log('Incoming email:', req.body.email); // <== DEBUG
+    await requestResetToken(req.body.email);
+    res.json({
+      message: 'Reset password email has been successfully sent!',
+      status: 200,
+      data: {},
+    });
+  } catch (error) {
+    console.error('Error in requestResetEmailController:', error); // <== DEBUG
+    next(error);
+  }
+};
+
+export const resetPasswordController = async (req, res) => {
+  await resetPassword(req.body);
+  res.json({
+    message: 'Password has been successfully reset!',
+    status: 200,
+    data: {},
   });
 };

@@ -1,5 +1,17 @@
 import { randomBytes } from 'crypto';
 import bcrypt from 'bcrypt';
+
+import path from 'node:path';
+import jwt from 'jsonwebtoken';
+import fs from 'node:fs/promises';
+import handlebars from 'handlebars';
+
+import { SMTP, TEMPLATES_DIR } from '../constants/index.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
+import { sendEmail } from '../utils/sendMail.js';
+
+
+
 import createHttpError from 'http-errors';
 import UsersCollection from '../db/models/user.js';
 
@@ -104,7 +116,7 @@ export const requestResetToken = async (email) => {
 
   const resetPasswordTemplatePath = path.join(
     TEMPLATES_DIR,
-    'send-password-email.html',
+    'reset-password-email.html',
   );
 
   try {
@@ -125,43 +137,37 @@ export const requestResetToken = async (email) => {
       html,
     });
   } catch (error) {
+    console.log(error);
+
     throw createHttpError(
       500,
       'Failed to send the email, please try again later.',
     );
   }
 };
-
 export const resetPassword = async (payload) => {
-  if (!payload.password || payload.password.length < 6) {
-    throw createHttpError(400, 'Password must be at least 6 characters long.');
-  }
-
-  let decodedToken;
+  let entries;
 
   try {
-    decodedToken = jwt.verify(payload.token, getEnvVar('JWT_SECRET'));
-  } catch (error) {
-    throw createHttpError(401, 'Token is expired or invalid.');
+    entries = jwt.verify(payload.token, getEnvVar('JWT_SECRET'));
+  } catch (err) {
+    if (err instanceof Error) throw createHttpError(401, err.message);
+    throw err;
   }
 
   const user = await UsersCollection.findOne({
-    email: decodedToken.email,
-    _id: decodedToken.sub,
+    email: entries.email,
+    _id: entries.sub,
   });
 
   if (!user) {
     throw createHttpError(404, 'User not found');
   }
 
-  const hashedPassword = await bcrypt.hash(payload.password, 10);
+  const encryptedPassword = await bcrypt.hash(payload.password, 10);
 
   await UsersCollection.updateOne(
     { _id: user._id },
-    { $set: { password: hashedPassword } },
+    { password: encryptedPassword },
   );
-
-  await SessionsCollection.deleteMany({ userId: user._id });
-
-  return { message: 'Password successfully reset' };
 };

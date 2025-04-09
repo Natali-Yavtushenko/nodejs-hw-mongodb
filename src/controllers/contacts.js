@@ -9,6 +9,9 @@ import createHttpError from 'http-errors';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+import { getEnvVar } from '../utils/getEnvVar.js';
 
 export const getContactsController = async (req, res) => {
   const { page, perPage } = parsePaginationParams(req.query);
@@ -54,19 +57,43 @@ export const createContactController = async (req, res) => {
   });
 };
 
-export const patchContactController = async (req, res) => {
-  const { contactId } = req.params;
-  const { _id: userId } = req.user;
+export const patchContactController = async (req, res, next) => {
+  try {
+    console.log('PATCH BODY:', req.body);
 
-  const updatedContact = await updateContact(contactId, req.body, userId);
+    const { contactId } = req.params;
+    const photo = req.file;
 
-  if (!updatedContact) throw createHttpError(404, 'Contact not found');
+    let photoUrl;
 
-  res.json({
-    status: 200,
-    message: 'Successfully patched a contact!',
-    data: updatedContact.value,
-  });
+    if (photo) {
+      const useCloudinary = getEnvVar('ENABLE_CLOUDINARY') === 'true';
+
+      if (useCloudinary) {
+        photoUrl = await saveFileToCloudinary(photo);
+      } else {
+        photoUrl = await saveFileToUploadDir(photo);
+      }
+    }
+
+    const updatedContact = await updateContact(contactId, {
+      ...req.body,
+      photo: photoUrl,
+    });
+
+    if (!updatedContact) {
+      return next(createHttpError(404, 'Contact not found'));
+    }
+
+    res.json({
+      status: 200,
+      message: `Successfully patched a contact!`,
+      data: updatedContact.contact,
+    });
+  } catch (err) {
+    console.error('PATCH ERROR:', err);
+    next(err);
+  }
 };
 
 export const deleteContactController = async (req, res) => {
