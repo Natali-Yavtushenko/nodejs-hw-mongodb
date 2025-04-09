@@ -8,9 +8,10 @@ import {
 } from '../controllers/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import {
-  createContactsSchema,
-  updateContactsSchema,
+  createContactSchema,
+  updateContactSchema,
 } from '../validation/contacts.js';
+
 import { upload } from '../middlewares/multer.js';
 import { validateBody } from '../middlewares/validateBody.js';
 import { isValidId } from '../middlewares/isvalidId.js';
@@ -32,14 +33,20 @@ contactRouter.post(
   '/',
   upload.single('photo'),
   validateBody(createContactsSchema),
+
+  validateBody(createContactSchema),
   ctrlWrapper(createContactController),
 );
 
 contactRouter.patch(
   '/:contactId',
   isValidId,
+
   upload.single('photo'),
   validateBody(updateContactsSchema),
+
+  validateBody(updateContactSchema),
+
   ctrlWrapper(patchContactController),
 );
 

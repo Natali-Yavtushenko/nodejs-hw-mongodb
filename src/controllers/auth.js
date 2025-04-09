@@ -1,15 +1,17 @@
+
 import {
   registerUser,
   requestResetToken,
   resetPassword,
 } from '../services/auth.js';
+import { registerUser } from '../services/auth.js';
 import { loginUser } from '../services/auth.js';
 import { logoutUser } from '../services/auth.js';
 import { refreshUsersSession } from '../services/auth.js';
 import { THIRTY_DAYS } from '../constants/index.js';
 
 export const registerUserController = async (req, res) => {
-  const user = await registerUser(req.body);
+  const user = await registerUser(reg.body);
 
   res.status(201).json({
     status: 201,
@@ -53,7 +55,11 @@ export const logoutUserController = async (req, res) => {
 const setupSession = (res, session) => {
   res.cookie('refreshToken', session.refreshToken, {
     httpOnly: true,
-    expires: new Date(Date.now() + THIRTY_DAYS),
+    expires: new Date(Date.now() + ONE_DAY),
+  });
+  res.cookie('sessionId', session._id, {
+    httpOnly: true,
+    expires: new Date(Date.now() + ONE_DAY),
   });
   res.cookie('sessionId', session._id, {
     httpOnly: true,
@@ -77,6 +83,7 @@ export const refreshUserSessionController = async (req, res) => {
     },
   });
 };
+
 
 export const requestResetEmailController = async (req, res, next) => {
   try {
