@@ -1,11 +1,15 @@
-import { registerUser, resetPassword } from '../services/auth.js';
+import {
+  registerUser,
+  requestResetToken,
+  resetPassword,
+} from '../services/auth.js';
 import { loginUser } from '../services/auth.js';
 import { logoutUser } from '../services/auth.js';
 import { refreshUsersSession } from '../services/auth.js';
 import { THIRTY_DAYS } from '../constants/index.js';
 
 export const registerUserController = async (req, res) => {
-  const user = await registerUser(reg.body);
+  const user = await registerUser(req.body);
 
   res.status(201).json({
     status: 201,
@@ -74,19 +78,25 @@ export const refreshUserSessionController = async (req, res) => {
   });
 };
 
-export const requestResetEmailController = async (req, res) => {
-  await requestResetToken(req.body.email);
-  res.json({
-    message: 'Reset password email was successfully sent!',
-    status: 200,
-    data: {},
-  });
+export const requestResetEmailController = async (req, res, next) => {
+  try {
+    console.log('Incoming email:', req.body.email); // <== DEBUG
+    await requestResetToken(req.body.email);
+    res.json({
+      message: 'Reset password email has been successfully sent!',
+      status: 200,
+      data: {},
+    });
+  } catch (error) {
+    console.error('Error in requestResetEmailController:', error); // <== DEBUG
+    next(error);
+  }
 };
 
 export const resetPasswordController = async (req, res) => {
   await resetPassword(req.body);
   res.json({
-    message: 'Password was successfully reset!',
+    message: 'Password has been successfully reset!',
     status: 200,
     data: {},
   });
