@@ -14,17 +14,15 @@ import UsersCollection from '../db/models/user.js';
 
 import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
 import { SessionsCollection } from '../db/models/session.js';
-import { loginUser } from '../services/auth.js';
+import { loginUser, registerUser } from '../services/auth.js';
 
-export const registerUserController = async (payload) => {
-  const user = await UsersCollection.findOne({ email: payload.email });
-  if (user) throw createHttpError(409, 'Email in use');
+export const registerUserController = async (req, res) => {
+  const user = await registerUser(req.body);
 
-  const encryptedPassword = await bcrypt.hash(payload.password, 10);
-
-  return await UsersCollection.create({
-    ...payload,
-    password: encryptedPassword,
+  res.status(201).json({
+    status: 201,
+    message: 'Successfully registered a user!',
+    data: user,
   });
 };
 
