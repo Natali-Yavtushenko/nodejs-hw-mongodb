@@ -1,30 +1,17 @@
 import Joi from 'joi';
-import { isValidObjectId } from 'mongoose';
 
-export const createContactSchema = Joi.object({
-  name: Joi.string().min(3).max(20).required(),
-  phoneNumber: Joi.string().min(3).max(20).required(),
-  email: Joi.string(),
-  isFavourite: Joi.boolean(),
+export const createContactsSchema = Joi.object({
+  name: Joi.string().min(3).max(18).required(),
+  phoneNumber: Joi.string().min(7).max(16).required(),
+  isFavourite: Joi.boolean().optional(),
+  email: Joi.string().email(),
   contactType: Joi.string().valid('work', 'home', 'personal').required(),
-  userId: Joi.string().custom((value, helper) => {
-    if (value && !isValidObjectId(value)) {
-      return helper.message('Contact id should be a valid mongo id');
-    }
-    return true;
-  }),
 });
 
-export const updateContactSchema = Joi.object({
-  name: Joi.string().min(3).max(30),
-  phoneNumber: Joi.string().min(3).max(20),
-  email: Joi.string(),
+export const updateContactsSchema = Joi.object({
+  name: Joi.string().min(3).max(20),
+  phoneNumber: Joi.string().min(7).max(16),
   isFavourite: Joi.boolean(),
-  contactType: Joi.string().valid('work', 'home', 'personal'),
-  userId: Joi.string().custom((value, helper) => {
-    if (value && !isValidObjectId(value)) {
-      return helper.message('Contact id should be a valid mongo id');
-    }
-    return true;
-  }),
+  email: Joi.string().email(),
+  contactType: Joi.string().valid('work', 'home', 'personal').min(1),
 });

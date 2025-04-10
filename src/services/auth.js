@@ -1,6 +1,5 @@
 import { randomBytes } from 'crypto';
 import bcrypt from 'bcrypt';
-
 import path from 'node:path';
 import jwt from 'jsonwebtoken';
 import fs from 'node:fs/promises';
@@ -9,8 +8,6 @@ import handlebars from 'handlebars';
 import { SMTP, TEMPLATES_DIR } from '../constants/index.js';
 import { getEnvVar } from '../utils/getEnvVar.js';
 import { sendEmail } from '../utils/sendMail.js';
-
-
 
 import createHttpError from 'http-errors';
 import UsersCollection from '../db/models/user.js';
@@ -67,7 +64,7 @@ const createSession = () => {
     accessToken,
     refreshToken,
     accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-    refreshTokenValidUntil: new Date(Date.now() + ONE_DAY),
+    refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
   };
 };
 

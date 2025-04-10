@@ -52,13 +52,9 @@ export const createContact = async (payload) => {
 };
 
 export const updateContact = async (contactId, payload, userId) => {
-
   console.log('Updating contact:', contactId);
   console.log('Payload:', JSON.stringify(payload, null, 2));
   console.log('User ID:', userId);
-
-  console.log('Updating contact:', contactId, payload, userId);
-
   const updatedContact = await ContactsCollection.findOneAndUpdate(
     { _id: contactId },
     payload,
