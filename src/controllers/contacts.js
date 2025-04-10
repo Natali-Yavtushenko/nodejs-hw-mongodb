@@ -58,6 +58,8 @@ export const createContactController = async (req, res) => {
 };
 
 export const patchContactController = async (req, res, next) => {
+  console.log('📥 BODY:', req.body);
+  console.log('📷 FILE:', req.file);
   const { contactId } = req.params;
   const photo = req.file;
 
@@ -67,7 +69,7 @@ export const patchContactController = async (req, res, next) => {
     if (getEnvVar('ENABLE_CLOUDINARY') === 'true') {
       photoUrl = await saveFileToCloudinary(photo);
     } else {
-      photoUrl = await saveFileToCloudinary(photo);
+      photoUrl = await saveFileToUploadDir(photo);
     }
   }
 
