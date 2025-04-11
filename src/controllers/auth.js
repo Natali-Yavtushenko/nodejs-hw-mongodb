@@ -115,6 +115,7 @@ export const resetPasswordController = async (req, res, next) => {
     let entries;
     try {
       entries = jwt.verify(token, getEnvVar('JWT_SECRET'));
+      // eslint-disable-next-line no-unused-vars
     } catch (err) {
       throw createHttpError(401, 'Invalid or expired token');
     }
