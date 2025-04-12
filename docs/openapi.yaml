@@ -16,7 +16,7 @@ servers:
 paths:
   /contacts:
     get:
-      $ref: ../swagger/paths/contact/get.yaml
+      $ref: ../swagger/paths/contacts/get.yaml
     post:
       $ref: ../swagger/paths/contacts/post.yaml
   /contacts/{contactId}:
@@ -43,7 +43,7 @@ paths:
       $ref: ../swagger/paths/auth/sendResetEmail.yaml
   /auth/reset-pwd:
     post:
-      $ref: ..//swagger/paths/auth/resetPwd.yaml
+      $ref: ../swagger/paths/auth/resetPwd.yaml
   /auth/get-oauth-url:
     get:
       $ref: ../swagger/paths/auth/get-oauth-url.yaml
